@@ -640,8 +640,8 @@ function run(src, config) {
     transformLoopClosures(ast, changes, options);
 
     //ast.$scope.print(); process.exit(-1);
-
-    if (error.errors.length >= 1) {
+    //return ast if ast was requested
+    if (!options.ast && error.errors.length >= 1) {
         return {
             errors: error.errors,
         };
@@ -651,7 +651,10 @@ function run(src, config) {
         cleanupTree(ast);
         allIdentifiers = setupScopeAndReferences(ast, {analyze: false});
     }
-    assert(error.errors.length === 0);
+
+    if (!options.ast) {
+        assert(error.errors.length === 0);
+    }
 
     // change constlet declarations to var, renamed if needed
     // varify modifies the scopes and AST accordingly and
@@ -662,7 +665,9 @@ function run(src, config) {
     if (options.ast) {
         // return the modified AST instead of src code
         // get rid of all added $ properties first, such as $parent and $scope
-        cleanupTree(ast);
+        if (!options.scopes) {
+            cleanupTree(ast);
+        }
         return {
             stats: stats,
             ast: ast,
